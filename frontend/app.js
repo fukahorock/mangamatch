@@ -145,22 +145,43 @@
     render();
   });
 
-  // 送信モーダル（デザインのみ）
-  const modal = new bootstrap.Modal(document.getElementById("submitModal"));
-  $("#openModalBtn").addEventListener("click", ()=>{
-    const ul = document.getElementById("selectedList"); ul.innerHTML="";
-    [...selected.values()].forEach(p=>{
-      const li=document.createElement("li"); li.textContent = `${p.title}（${p.progress}）`; ul.appendChild(li);
-    });
-    modal.show();
+// 送信モーダル（デザインのみ）
+const modal = new bootstrap.Modal(document.getElementById("submitModal"));
+
+document.getElementById("openModalBtn").addEventListener("click", ()=>{
+  const wrap = document.getElementById("selectedList");
+  wrap.innerHTML = "";
+  [...selected.values()].forEach(p=>{
+    const row = document.createElement("div");
+    row.className = "border rounded p-2";
+    row.innerHTML = `
+      <div class="fw-semibold mb-1">${p.title || "（未定）"} <span class="text-muted small">（${p.progress}）</span></div>
+      <input type="text" class="form-control form-control-sm js-item-note"
+             data-id="${p.id}" maxlength="120"
+             placeholder="この作品への一言（任意・120文字まで）">
+    `;
+    wrap.appendChild(row);
   });
-  document.getElementById("submitForm").addEventListener("submit",(e)=>{
-    e.preventDefault();
-    const note = document.getElementById("noteCommon").value.trim();
-    console.log("フカホリ宛:", { ids:[...selected.keys()], note });
-    alert(`${selected.size}件をフカホリに伝えました（デザイン版）`);
-    modal.hide();
+  modal.show();
+});
+
+document.getElementById("submitForm").addEventListener("submit",(e)=>{
+  e.preventDefault();
+  const noteCommon = document.getElementById("noteCommon").value.trim();
+  const notesByProject = {};
+  document.querySelectorAll(".js-item-note").forEach(inp=>{
+    const v = inp.value.trim();
+    if(v) notesByProject[inp.dataset.id] = v;
   });
+  console.log("フカホリ宛（まとめて）:", {
+    ids: [...selected.keys()],
+    noteCommon,
+    notesByProject
+  });
+  alert(`${selected.size}件をフカホリに伝えました（デザイン版：console出力のみ）`);
+  modal.hide();
+});
+
 
   // 初期表示
   render();
