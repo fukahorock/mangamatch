@@ -125,7 +125,7 @@
       const badgeClass = isClosed ? "badge-closed" : `text-bg-${progressColor(p.progress)}`;
       const isSelected = selected.has(p.id);
       const btnClass = isSelected ? "btn btn-primary" : "btn btn-outline-primary";
-      const btnLabel = isSelected ? "✓ 選択中" : "選択";
+      const btnLabel = isSelected ? "✓ 選択中" : "気になる";
       const disabledAttr = isClosed ? "disabled" : "";
 
       col.innerHTML = `
