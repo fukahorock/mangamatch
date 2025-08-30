@@ -35,7 +35,7 @@
         <span class="text-muted small d-none d-md-inline">知人限定・ポートフォリオ不要</span>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <img src="https://unavatar.io/discord" class="avatar" alt="Discord Avatar (placeholder)">
+        <img src="https://unavatar.io/discord" class="avatar" alt="Discord Avatar (placeholder)" id="userAvatar">
         <div class="small text-muted">あなた：<span id="userName">（未ログイン）</span></div>
       </div>
     </div>
@@ -116,9 +116,13 @@
           </ul>
           <hr>
           <div class="small text-muted">※ 原稿料は企画により異なるため掲載しません。詳細は個別にご相談ください（備考欄をご参照）。</div>
-          <button id="logoutSide" class="btn btn-outline-secondary btn-sm w-100 mt-2">ログアウト</button>
-
-        </div>
+          <!-- サイドバー内のユーザー欄などに -->
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <img id="userAvatarSide" src="/img/discord-default.png" alt="" width="36" height="36" class="rounded-circle">
+            <div class="small"><span id="userNameSide">ユーザー</span></div>
+          </div>
+          <button id="logoutSide" class="btn btn-outline-secondary btn-sm w-100">ログアウト</button>
+                  </div>
       </div>
     </aside>
   </main>
@@ -162,6 +166,10 @@
       <div class="modal-header">
         <h5 class="modal-title">選んだ作品を送信</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <p id="idNote" class="form-text text-muted d-none">
+          ※ この送信では <strong>あなたの Discord ID</strong>
+          （<code id="myDiscordId"></code>）がフカホリに通知されます。
+        </p>        
       </div>
       <div class="modal-body">
         <ol id="selectedList" class="list-group list-group-numbered"></ol>
@@ -177,6 +185,21 @@
   </div>
 </div>
 
+<!-- 送信後モーダル -->
+<div class="modal fade" id="submitDoneModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body text-center">
+        <div class="display-6 mb-2">✅</div>
+        <p class="mb-0">送信が完了しました。ありがとうございます！</p>
+        <!-- ※ 文言はあとで調整OK -->
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   <script src="js/projects.js"></script>

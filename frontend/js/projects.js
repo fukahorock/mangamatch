@@ -13,8 +13,13 @@
     ["userName","userNameSide","userNameOff"].forEach(id => {
       const el = document.getElementById(id); if (el) el.textContent = name;
     });
-    const av = document.getElementById("userAvatar");
-    if (av && u?.avatarUrl) { av.src = u.avatarUrl; av.alt = name; }
+    // Discordアイコン反映（両方あれば両方）
+    const def = "/img/discord-default.png";
+    const src = (u && u.avatarUrl) ? u.avatarUrl : def;
+    ["userAvatar","userAvatarSide"].forEach(id => {
+      const img = document.getElementById(id);
+      if (img) { img.src = src; img.alt = name; }
+    });
   }
   function bindLogout() {
     const go = () => { location.href = "/api/auth/logout"; };
@@ -231,6 +236,8 @@
     const selectedList = document.getElementById("selectedList");
     const messageInput = document.getElementById("messageInput");
     const submitForm = document.getElementById("submitForm");
+    const idNote = document.getElementById("idNote");       // 追加：注釈
+    const myDiscordId = document.getElementById("myDiscordId"); // 追加：ID表示
 
     openModalBtn?.addEventListener("click", ()=>{
       const items = Array.from(picked.values());
@@ -240,7 +247,12 @@
             <div class="text-muted small">${esc(clip(i.summary||"", 120))}</div>
           </li>`).join("")
         : `<div class="small text-muted p-2">選択されていません。</div>`;
-
+        // Discord ID の注釈（表示）
+        if (idNote && myDiscordId) {
+          const id = (CURRENT_USER && CURRENT_USER.id) ? CURRENT_USER.id : "";
+          myDiscordId.textContent = id || "(未取得)";
+          idNote.classList.remove("d-none");
+         }
       const modalEl = document.getElementById("submitModal");
       if (modalEl && window.bootstrap) {
         const m = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
@@ -272,6 +284,11 @@
           (bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)).hide();
         }
         messageInput.value = "";
+        // 完了モーダルを表示（感謝メッセージ）
+        const doneEl = document.getElementById("submitDoneModal");
+        if (doneEl && window.bootstrap) {
+          (new bootstrap.Modal(doneEl)).show();
+        }
       } catch (e) {
         alert("送信に失敗しました。時間をおいて再試行してください。");
         console.error(e);
@@ -286,7 +303,8 @@
   (async function init(){
     const sess = await getSession();
     if (!sess.authenticated) { location.replace("/login"); return; }
-    setUser(sess.user);
+    CURRENT_USER = sess.user;
+    setUser(CURRENT_USER);
     bindLogout();
 
     try { ALL = await loadProjects(); } catch (e) { console.error(e); ALL = []; }
