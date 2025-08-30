@@ -102,7 +102,7 @@
       <div class="card">
         <div class="card-body">
           <div class="d-flex align-items-center gap-2 mb-3">
-            <img src="https://unavatar.io/discord" class="avatar" alt="">
+            <img src="https://unavatar.io/discord" class="avatar" alt="Discord Avatar (placeholder)" id="userAvatar">
             <div class="small">
               <div class="text-muted">あなた</div>
               <div id="userNameSide" class="fw-semibold">（未ログイン）</div>
@@ -117,10 +117,6 @@
           <hr>
           <div class="small text-muted">※ 原稿料は企画により異なるため掲載しません。詳細は個別にご相談ください（備考欄をご参照）。</div>
           <!-- サイドバー内のユーザー欄などに -->
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <img id="userAvatarSide" src="/img/discord-default.png" alt="" width="36" height="36" class="rounded-circle">
-            <div class="small"><span id="userNameSide">ユーザー</span></div>
-          </div>
           <button id="logoutSide" class="btn btn-outline-secondary btn-sm w-100">ログアウト</button>
                   </div>
       </div>
@@ -166,12 +162,12 @@
       <div class="modal-header">
         <h5 class="modal-title">選んだ作品を送信</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        <p id="idNote" class="form-text text-muted d-none">
-          ※ この送信では <strong>あなたの Discord ID</strong>
-          （<code id="myDiscordId"></code>）がフカホリに通知されます。
-        </p>        
+      
       </div>
       <div class="modal-body">
+        <p id="idNote" class="form-text text-muted d-none">
+          ※ この送信では <strong>あなたの Discord IDがフカホリに通知されます。
+        </p>  
         <ol id="selectedList" class="list-group list-group-numbered"></ol>
         <div class="mt-3">
           <label class="form-label">メッセージ（任意）</label>
