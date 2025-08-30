@@ -1,0 +1,8 @@
+{
+  "name": "amplify-backend",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@aws-amplify/backend": "^1.0.0"
+  }
+}
