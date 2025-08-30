@@ -276,3 +276,94 @@
   // 初期表示（更新日：新しい順／6件表示）
   render();
 })();
+
+/* ===========================
+   mangamatch notify glue (append-only)
+   - 既存の app.js を変更せず、末尾に貼るだけで通知を追加
+   =========================== */
+
+// 1) /api/notify 呼び出し（index.html 側に無ければ定義）
+if (typeof window.mmPostNotify !== "function") {
+  window.mmPostNotify = async function(type, data) {
+    try {
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ type, data })
+      });
+    } catch (e) {
+      console.warn("notify failed:", e);
+    }
+  };
+}
+
+// 2) 「気になる」ボタンの通知フック（イベント委譲）
+document.addEventListener("click", (ev) => {
+  const btn = ev.target.closest('[data-action="favorite"], .js-favorite, .favorite-btn');
+  if (!btn) return;
+
+  const card = btn.closest("[data-project-id], .card, [data-id]");
+  const projectId =
+    btn.getAttribute("data-id") ||
+    (card && (card.getAttribute("data-project-id") || card.getAttribute("data-id"))) ||
+    undefined;
+
+  let title =
+    btn.getAttribute("data-title") ||
+    (card && (card.querySelector(".card-title, [data-title]")?.textContent?.trim() ||
+              card.getAttribute("data-title"))) ||
+    "";
+
+  const selected =
+    btn.classList.contains("selected") ||
+    btn.classList.contains("active") ||
+    (card && (card.classList.contains("selected") || card.classList.contains("is-selected"))) ||
+    btn.getAttribute("aria-pressed") === "true" ||
+    btn.getAttribute("data-selected") === "true";
+
+  window.mmPostNotify("favorite", { projectId, title, selected });
+}, false);
+
+// 3) 「まとめて送信」通知フック
+async function mmCollectSelectedProjectIds() {
+  const out = new Set();
+  document.querySelectorAll("[data-project-id][data-selected='true']").forEach(el => out.add(el.getAttribute("data-project-id")));
+  document.querySelectorAll(".card.selected, [data-project-id].selected").forEach(el => out.add(el.getAttribute("data-project-id")));
+  document.querySelectorAll('input[name="projectIds[]"]:checked, input[data-project-id][type="checkbox"]:checked')
+    .forEach(el => out.add(el.value || el.getAttribute("data-project-id")));
+  return Array.from(out);
+}
+
+document.addEventListener("click", async (ev) => {
+  const submitBtn = ev.target.closest('#submitSelected, .js-submit, [data-action="submit"]');
+  if (!submitBtn) return;
+
+  const noteCommon = (document.querySelector("#noteCommon, textarea[name='noteCommon']")?.value || "").trim();
+  const perProjectComments = {};
+  document.querySelectorAll("textarea[data-project-id], input[type='text'][data-project-id]").forEach(el => {
+    const pid = el.getAttribute("data-project-id");
+    if (!pid) return;
+    const v = (el.value || "").trim();
+    if (v) perProjectComments[pid] = v;
+  });
+
+  const selectedIds = await mmCollectSelectedProjectIds();
+  window.mmPostNotify("submit", { selectedIds, message: noteCommon, comments: perProjectComments });
+}, false);
+
+// 4) （任意）ログイン通知：1セッション1回だけ
+(async () => {
+  try {
+    const flagKey = "mm_login_notified";
+    if (sessionStorage.getItem(flagKey) === "1") return;
+
+    const r = await fetch("/api/auth/me", { credentials: "include" });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j && j.authenticated) {
+      sessionStorage.setItem(flagKey, "1");
+      window.mmPostNotify("login", { user: j.user });
+    }
+  } catch {}
+})();

@@ -161,7 +161,7 @@ export const handler = async (event) => {
       if (!allow.has(me.id)) {
         console.log("DENY", me.id, me.username, me.global_name);
         // 許可外: セッションは発行せず、テストページに戻す
-        return redirect(`${BASE_URL || "/"}/frontend/login-test.html`, [
+        return redirect(`${BASE_URL || "/"}/`, [
           clearCookie("mm_state"),
         ]);
       }
@@ -175,10 +175,11 @@ export const handler = async (event) => {
       console.log("LOGIN", me.id, me.username, me.global_name);
 
       // テストがしやすいよう、成功後は login-test.html に戻す
-      return redirect(`${BASE_URL || "/"}/frontend/login-test.html`, [
+      return redirect(`${BASE_URL || "/"}/`, [
         setCookie("mm_session", sess, { maxAge: 7 * 24 * 3600 }),
         clearCookie("mm_state"),
       ]);
+      
     }
 
     // --- /api/auth/me ---
