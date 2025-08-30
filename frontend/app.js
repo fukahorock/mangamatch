@@ -5,6 +5,8 @@
   const stickyBar = $("#stickyBar");
   const countEl = $("#count");
   const pagerEl = $("#pager");
+  const activeTagBar = $("#activeTagBar");
+  const activeTagEl  = $("#activeTag");
 
   // ログイン表示（デモ）
   const demoName = "（テストユーザー）";
@@ -16,23 +18,14 @@
   const res = await fetch("projects.json", { cache: "no-store" });
   let projects = await res.json();
 
-  // 更新日で新しい順
-  projects.sort((a,b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
-
   // 状態
-  const selected = new Map(); // id -> project
-  let progressFilter = "";    // 進捗のみ
-  let keyword = "";           // フリーワード
-  let tagFilter = "";         // タグクリック絞り込み
-  let showAll = false;        // 全件表示
-  const perPage = 6;
+  const selected = new Map();      // id -> project
+  let progressFilter = "";         // 進捗
+  let keyword = "";                // フリーワード
+  let tagFilter = "";              // タグ
+  let sortOrder = "desc";          // "desc" | "asc"
+  let perPage = 6;                 // 6 | 12 | 24 | Infinity
   let currentPage = 1;
-
-  // UI参照
-  const activeTagBar = $("#activeTagBar");
-  const activeTagEl  = $("#activeTag");
-  const toggleAllBtn = $("#toggleAllBtn");
-  const toggleAllBtnSp = $("#toggleAllBtnSp");
 
   const progressColor = (p)=>({
     "連載決定済み":"success",
@@ -47,6 +40,14 @@
     const d = new Date(iso);
     if(Number.isNaN(d.getTime())) return iso;
     return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`;
+  }
+
+  function sortByUpdated(items){
+    return items.slice().sort((a,b)=>{
+      const da = new Date(a.updatedAt).getTime();
+      const db = new Date(b.updatedAt).getTime();
+      return sortOrder === "desc" ? (db - da) : (da - db);
+    });
   }
 
   function matches(p){
@@ -64,18 +65,19 @@
   }
 
   function filteredItems(){
-    return projects.filter(matches);
+    const filtered = projects.filter(matches);
+    return sortByUpdated(filtered);
   }
 
   function pagedItems(items){
-    if(showAll) return items;
+    if(!Number.isFinite(perPage)) return items;
     const start = (currentPage-1)*perPage;
     return items.slice(start, start + perPage);
   }
 
   function renderPager(total){
     pagerEl.innerHTML = "";
-    if(showAll) return;
+    if(!Number.isFinite(perPage)) return; // 全件表示のときは非表示
 
     const totalPages = Math.max(1, Math.ceil(total/perPage));
     currentPage = Math.min(currentPage, totalPages);
@@ -98,28 +100,16 @@
       return li;
     };
 
-    const totalPagesNum = Math.max(1, Math.ceil(total/perPage));
     pagerEl.appendChild(mkItem("«", Math.max(1, currentPage-1), currentPage===1));
-    for(let p=1;p<=totalPagesNum;p++){
+    for(let p=1;p<=totalPages;p++){
       pagerEl.appendChild(mkItem(String(p), p, false, p===currentPage));
     }
-    pagerEl.appendChild(mkItem("»", Math.min(totalPagesNum, currentPage+1), currentPage===totalPagesNum));
+    pagerEl.appendChild(mkItem("»", Math.min(totalPages, currentPage+1), currentPage===totalPages));
   }
 
   function render(){
     const itemsAll = filteredItems();
     const items = pagedItems(itemsAll);
-
-    // 上部の「全件表示」ボタン表示制御
-    if(itemsAll.length > perPage){
-      toggleAllBtn?.classList.remove("d-none");
-      toggleAllBtnSp?.classList.remove("d-none");
-    } else {
-      toggleAllBtn?.classList.add("d-none");
-      toggleAllBtnSp?.classList.add("d-none");
-    }
-    toggleAllBtn && (toggleAllBtn.textContent = showAll ? "ページ表示" : "全件表示");
-    toggleAllBtnSp && (toggleAllBtnSp.textContent = showAll ? "ページ表示" : "全件表示");
 
     // リスト描画
     listEl.innerHTML = "";
@@ -128,16 +118,14 @@
 
     items.forEach(p=>{
       const col = document.createElement("div");
-      // 基本2列
-      col.className = "col-12 col-md-6 col-lg-6";
+      col.className = "col-12 col-md-6 col-lg-6"; // 基本2列
 
       const tagsHtml = (p.tags||[]).map(t=>`<span class="mm-chip js-tag" data-tag="${t}">${t}</span>`).join("");
-
-      // 募集終了の表示制御
       const isClosed = (p.progress === "募集終了");
       const badgeClass = isClosed ? "badge-closed" : `text-bg-${progressColor(p.progress)}`;
-      const selectBtnStateClass = selected.has(p.id) ? "btn-primary" : "btn-outline-primary";
-      const selectBtnLabel = selected.has(p.id) ? "✓ 選択中" : "選択";
+      const isSelected = selected.has(p.id);
+      const btnClass = isSelected ? "btn btn-primary" : "btn btn-outline-primary";
+      const btnLabel = isSelected ? "✓ 選択中" : "選択";
       const disabledAttr = isClosed ? "disabled" : "";
 
       col.innerHTML = `
@@ -189,7 +177,7 @@
             </div>
 
             <div class="mt-3 d-flex justify-content-between align-items-center">
-              <button class="btn select-btn ${selectBtnStateClass} js-select" data-id="${p.id}" ${disabledAttr}>${selectBtnLabel}</button>
+              <button class="${btnClass} js-select" data-id="${p.id}" ${disabledAttr}>${btnLabel}</button>
               ${isClosed ? '<span class="small text-muted ms-2">募集終了のため選択不可</span>' : ''}
             </div>
           </div>
@@ -197,7 +185,7 @@
       `;
       listEl.appendChild(col);
 
-      // タグクリック → フィルタ
+      // タグクリック → 絞り込み
       col.querySelectorAll(".js-tag").forEach(el=>{
         el.addEventListener("click", ()=>{
           tagFilter = el.dataset.tag;
@@ -209,20 +197,20 @@
         });
       });
 
-      // 選択ボタン（トグル）
+      // 選択トグル
       const btn = col.querySelector(".js-select");
       if(btn){
         btn.addEventListener("click", ()=>{
           if(selected.has(p.id)) selected.delete(p.id);
           else selected.set(p.id, p);
           updateBar();
-          render(); // ボタン見た目更新のため再描画
+          render(); // 見た目更新
         });
       }
     });
 
     // ページャ
-    renderPager(filteredItems().length);
+    renderPager(itemsAll.length);
   }
 
   function updateBar(){
@@ -231,25 +219,25 @@
     stickyBar.style.display = n ? "block" : "none";
   }
 
-  // 検索・進捗・タグ解除
+  // 入力系イベント
   $("#searchInput").addEventListener("input",(e)=>{ keyword = e.target.value.trim().toLowerCase(); currentPage=1; render(); });
   $("#filterProgress").addEventListener("change",(e)=>{ progressFilter = e.target.value; currentPage=1; render(); });
+  $("#sortOrder").addEventListener("change",(e)=>{ sortOrder = e.target.value; currentPage=1; render(); });
+  $("#pageSize").addEventListener("change",(e)=>{
+    const v = e.target.value;
+    perPage = (v === "all") ? Infinity : parseInt(v,10);
+    currentPage = 1;
+    render();
+  });
   $("#clearFilters").addEventListener("click", ()=>{
     progressFilter=""; keyword=""; tagFilter="";
     $("#searchInput").value=""; $("#filterProgress").value="";
     activeTagBar.classList.add("d-none");
     currentPage=1; render();
   });
-  $("#clearTagBtn").addEventListener("click", ()=>{
-    tagFilter=""; activeTagBar.classList.add("d-none"); currentPage=1; render();
-  });
+  $("#clearTagBtn").addEventListener("click", ()=>{ tagFilter=""; activeTagBar.classList.add("d-none"); currentPage=1; render(); });
 
-  // 全件表示トグル（PC/スマホ）
-  const toggleAll = ()=>{ showAll = !showAll; currentPage = 1; render(); };
-  toggleAllBtn?.addEventListener("click", toggleAll);
-  toggleAllBtnSp?.addEventListener("click", ()=>{ toggleAll(); /* 閉じるのは任意 */ });
-
-  // 送信モーダル（デザインのみ）
+  // モーダル（まとめて送信／デザインのみ）
   const modal = new bootstrap.Modal(document.getElementById("submitModal"));
   $("#openModalBtn").addEventListener("click", ()=>{
     const wrap = document.getElementById("selectedList");
@@ -281,10 +269,10 @@
       noteCommon,
       notesByProject
     });
-    alert(`${selected.size}件をフカホリに伝えました（デザイン版：console出力のみ）`);
+    alert(`${Object.keys(notesByProject).length ? "各作品の一言付きで" : ""}${selected.size}件をフカホリに伝えました（デザイン版）`);
     modal.hide();
   });
 
-  // 初期表示
+  // 初期表示（更新日：新しい順／6件表示）
   render();
 })();

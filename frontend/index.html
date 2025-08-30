@@ -17,8 +17,6 @@
     .mm-stickybar{position:fixed;left:0;right:0;bottom:0;z-index:1030;display:none}
     .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
     @media (min-width: 992px){ .content-with-nav{display:grid;grid-template-columns:1fr 280px;gap:24px;} }
-    .select-btn.btn { min-height: 40px; }
-    .select-btn.selected { pointer-events: auto; }
     .badge-closed { background: #6c757d !important; }
   </style>
 </head>
@@ -46,12 +44,12 @@
   <main class="container my-4 content-with-nav">
     <!-- メイン列 -->
     <section>
-      <!-- 上部フィルタ -->
+      <!-- 上部フィルタ列 -->
       <div class="row g-2 mb-2">
-        <div class="col-12 col-lg-6">
+        <div class="col-12 col-xl-5">
           <input id="searchInput" class="form-control" placeholder="フリーワード検索（タイトル・タグ・雑誌・頻度/ページ数・向いてそうな人・内容）" />
         </div>
-        <div class="col-7 col-sm-6 col-lg-3">
+        <div class="col-6 col-md-4 col-xl-3">
           <select id="filterProgress" class="form-select">
             <option value="">進捗状況（すべて）</option>
             <option value="連載決定済み">連載決定済み</option>
@@ -61,9 +59,24 @@
             <option value="募集終了">募集終了</option>
           </select>
         </div>
-        <div class="col-5 col-sm-6 col-lg-3 d-flex gap-2">
-          <button id="clearFilters" class="btn btn-outline-secondary w-100">絞り込み解除</button>
-          <button id="toggleAllBtn" class="btn btn-outline-dark d-none d-lg-inline w-100">全件表示</button>
+        <div class="col-6 col-md-4 col-xl-2">
+          <!-- 新規：更新日ソート -->
+          <select id="sortOrder" class="form-select" aria-label="更新日の並び替え">
+            <option value="desc">更新日：新しい順</option>
+            <option value="asc">更新日：古い順</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+          <!-- 新規：表示件数プルダウン -->
+          <select id="pageSize" class="form-select" aria-label="1ページの表示件数">
+            <option value="6">6件表示</option>
+            <option value="12">12件表示</option>
+            <option value="24">24件表示</option>
+            <option value="all">全件表示</option>
+          </select>
+        </div>
+        <div class="col-6 col-xl-0 d-grid">
+          <button id="clearFilters" class="btn btn-outline-secondary">絞り込み解除</button>
         </div>
       </div>
 
@@ -128,12 +141,10 @@
         <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">よくある質問</a></li>
         <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">お問い合わせ</a></li>
       </ul>
-      <hr>
-      <button id="toggleAllBtnSp" class="btn btn-outline-dark w-100">全件表示</button>
     </div>
   </div>
 
-  <!-- 下部：選択バー（ECサイト形式） -->
+  <!-- 下部：選択バー -->
   <div id="stickyBar" class="mm-stickybar bg-white border-top">
     <div class="container py-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
       <div class="small">選択中: <span id="count" class="fw-bold">0</span> 件</div>
