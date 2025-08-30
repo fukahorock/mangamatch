@@ -4,10 +4,8 @@
   const emptyEl = $("#empty");
   const stickyBar = $("#stickyBar");
   const countEl = $("#count");
-  const activeTagBar = $("#activeTagBar");
-  const activeTagEl = $("#activeTag");
 
-  // デモ用：Discord名のプレースホルダ（将来OAuthで差し替え）
+  // デモ用ログイン表示
   const demoName = "（テストユーザー）";
   ["#userName", "#userNameSide", "#userNameOff"].forEach(sel=>{
     const el = document.querySelector(sel); if(el) el.textContent = demoName;
@@ -15,13 +13,14 @@
 
   // データ読み込み
   const res = await fetch("projects.json", { cache: "no-store" });
-  const projects = await res.json();
+  let projects = await res.json();
 
-  // 状態
-  const selected = new Map(); // id -> project
-  let tagFilter = "";         // クリック中のタグ
-  let progressFilter = "";    // 進捗
-  let keyword = "";           // 検索
+  // 更新日ソート（新しい順）
+  projects.sort((a,b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
+
+  const selected = new Map();
+  let progressFilter = "";
+  let keyword = "";
 
   const progressColor = (p)=>({
     "連載決定済み":"success",
@@ -30,17 +29,20 @@
     "アイデアだけある":"secondary"
   }[p] || "secondary");
 
+  function formatDate(iso){
+    if(!iso) return "—";
+    const d = new Date(iso);
+    if(Number.isNaN(d.getTime())) return iso;
+    return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`;
+  }
+
   function matches(p){
-    // 進捗
     if(progressFilter && p.progress !== progressFilter) return false;
-    // タグ
-    if(tagFilter && !(p.tags||[]).includes(tagFilter)) return false;
-    // キーワード
     if(keyword){
       const blob = [
         p.projectName, p.progress, p.title,
         (p.tags||[]).join(" "), p.magazines, p.cadenceAndPages,
-        p.goodFor, p.summary, p.notes
+        p.goodFor, p.summary, p.notes, p.updatedAt
       ].join(" ").toLowerCase();
       if(!blob.includes(keyword)) return false;
     }
@@ -55,8 +57,9 @@
 
     items.forEach(p=>{
       const col = document.createElement("div");
-      col.className = "col-12 col-md-6 col-lg-4";
-      const tagsHtml = (p.tags||[]).map(t=>`<span class="mm-chip js-tag" data-tag="${t}">${t}</span>`).join("");
+      // 基本2列
+      col.className = "col-12 col-md-6 col-lg-6";
+      const tagsHtml = (p.tags||[]).map(t=>`<span class="mm-chip">${t}</span>`).join("");
 
       col.innerHTML = `
         <div class="card mm-card h-100">
@@ -76,15 +79,14 @@
               <div>${tagsHtml}</div>
             </div>
 
-            <div class="row g-2 mt-2">
-              <div class="col-12">
-                <div class="mm-label mb-1">想定雑誌（自由記入）</div>
-                <div>${p.magazines || "—"}</div>
-              </div>
-              <div class="col-12">
-                <div class="mm-label mb-1">想定頻度とページ数（自由記入）</div>
-                <div>${p.cadenceAndPages || "—"}</div>
-              </div>
+            <div class="mt-2">
+              <div class="mm-label mb-1">想定雑誌</div>
+              <div>${p.magazines || "—"}</div>
+            </div>
+
+            <div class="mt-2">
+              <div class="mm-label mb-1">想定頻度とページ数</div>
+              <div>${p.cadenceAndPages || "—"}</div>
             </div>
 
             <div class="mt-2">
@@ -102,9 +104,13 @@
               <div class="mm-note">${p.notes || "—"}</div>
             </div>
 
-            <div class="mt-3 d-flex gap-2">
-              <button class="btn btn-outline-primary btn-sm flex-grow-1 js-like" data-id="${p.id}">気になる</button>
-              <div class="form-check ms-auto">
+            <div class="mt-2">
+              <div class="mm-label mb-1">更新日</div>
+              <div class="small text-muted">📅 ${formatDate(p.updatedAt)}</div>
+            </div>
+
+            <div class="mt-3 d-flex justify-content-end">
+              <div class="form-check">
                 <input class="form-check-input js-check" type="checkbox" value="${p.id}" id="chk_${p.id}">
                 <label class="form-check-label small" for="chk_${p.id}">選択</label>
               </div>
@@ -113,23 +119,6 @@
         </div>
       `;
       listEl.appendChild(col);
-
-      // タグクリック → フィルタ
-      col.querySelectorAll(".js-tag").forEach(el=>{
-        el.addEventListener("click", ()=>{
-          tagFilter = el.dataset.tag;
-          activeTagEl.textContent = `# ${tagFilter}`;
-          activeTagBar.classList.remove("d-none");
-          render();
-          window.scrollTo({top:0,behavior:"smooth"});
-        });
-      });
-
-      // 気になる（単体）→ いまはデザイン用
-      col.querySelector(".js-like").addEventListener("click", ()=>{
-        console.log("気になる（単体）:", p.id, p.title);
-        alert(`「${p.title}」を気になるにしました（デザイン版：console出力のみ）`);
-      });
 
       // 複数選択
       const chk = col.querySelector(".js-check");
@@ -151,26 +140,25 @@
   $("#searchInput").addEventListener("input",(e)=>{ keyword = e.target.value.trim().toLowerCase(); render(); });
   $("#filterProgress").addEventListener("change",(e)=>{ progressFilter = e.target.value; render(); });
   $("#clearFilters").addEventListener("click", ()=>{
-    tagFilter=""; progressFilter=""; keyword="";
+    progressFilter=""; keyword="";
     $("#searchInput").value=""; $("#filterProgress").value="";
-    activeTagBar.classList.add("d-none");
     render();
   });
 
   // 送信モーダル（デザインのみ）
   const modal = new bootstrap.Modal(document.getElementById("submitModal"));
   $("#openModalBtn").addEventListener("click", ()=>{
-    const ul = $("#selectedList"); ul.innerHTML="";
+    const ul = document.getElementById("selectedList"); ul.innerHTML="";
     [...selected.values()].forEach(p=>{
       const li=document.createElement("li"); li.textContent = `${p.title}（${p.progress}）`; ul.appendChild(li);
     });
     modal.show();
   });
-  $("#submitForm").addEventListener("submit",(e)=>{
+  document.getElementById("submitForm").addEventListener("submit",(e)=>{
     e.preventDefault();
-    const note = $("#noteCommon").value.trim();
-    console.log("フカホリ宛（まとめて）:", { ids:[...selected.keys()], note });
-    alert(`${selected.size}件をフカホリに伝えました（デザイン版：console出力のみ）`);
+    const note = document.getElementById("noteCommon").value.trim();
+    console.log("フカホリ宛:", { ids:[...selected.keys()], note });
+    alert(`${selected.size}件をフカホリに伝えました（デザイン版）`);
     modal.hide();
   });
 
