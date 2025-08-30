@@ -2,150 +2,161 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>MangaMatch｜作画募集カタログ（知人限定）</title>
+  <title>MangaMatch｜作画募集カタログ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Bootstrap 5 (CDN) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <style>
-    body { background:#f8f9fa; }
-    .mm-card { transition: box-shadow .15s ease; }
-    .mm-card:hover { box-shadow: 0 .25rem .75rem rgba(0,0,0,.08); }
-    .mm-chip { display:inline-block; padding:.25rem .5rem; border-radius:999px; font-size:.75rem; background:#f1f3f5; margin-right:.25rem; margin-bottom:.25rem; }
-    .mm-note { white-space: pre-wrap; }
-    .mm-label { font-size:.8rem; color:#6c757d; }
+    body{background:#f8f9fa; padding-bottom:96px;}
+    .mm-card{transition:box-shadow .15s ease;}
+    .mm-card:hover{box-shadow:0 .25rem .75rem rgba(0,0,0,.08);}
+    .mm-chip{display:inline-block;padding:.25rem .5rem;border-radius:999px;font-size:.75rem;background:#f1f3f5;margin-right:.25rem;margin-bottom:.25rem;cursor:pointer;}
+    .mm-chip:hover{background:#e9ecef;}
+    .mm-label{font-size:.82rem;color:#6c757d;}
+    .mm-note{white-space:pre-wrap;}
+    .mm-stickybar{position:fixed;left:0;right:0;bottom:0;z-index:1030;display:none}
+    .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
+    @media (min-width: 992px){ .content-with-nav{display:grid;grid-template-columns:1fr 280px;gap:24px;} }
   </style>
 </head>
 <body>
 
+  <!-- Topbar -->
   <nav class="navbar navbar-light bg-white border-bottom sticky-top">
-    <div class="container">
-      <span class="navbar-brand fw-bold">MangaMatch</span>
-      <small class="text-muted">原稿料：<span class="badge text-bg-secondary">相談（非掲載）</span></small>
+    <div class="container d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#navOffcanvas" aria-controls="navOffcanvas">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <span class="navbar-brand fw-bold mb-0">MangaMatch</span>
+        <span class="text-muted small d-none d-md-inline">知人限定・ポートフォリオ不要</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <!-- ログイン表示（デモ：固定） -->
+        <img src="https://unavatar.io/discord" class="avatar" alt="Discord Avatar (placeholder)">
+        <div class="small text-muted">あなた：<span id="userName">（未ログイン）</span></div>
+      </div>
     </div>
   </nav>
 
-  <main class="container my-4">
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-      <h1 class="h4 mb-0">作画募集カタログ</h1>
-      <span class="text-muted small">知人限定・ポートフォリオ不要</span>
-    </div>
-
-    <!-- ▼ ここからカード（必要数だけ複製してください） -->
-    <div class="row g-3">
-
-      <!-- Card #1 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card mm-card h-100">
-          <div class="card-body d-flex flex-column">
-            <div class="d-flex align-items-start justify-content-between">
-              <div class="fw-semibold">拳で西部劇世界を戦う漫画</div>
-              <span class="badge text-bg-primary">コンペ用ネーム準備中</span>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">作品タイトル</div>
-              <div class="fw-semibold">拳骨無頼（仮）</div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">作品タグ</div>
-              <div>
-                <span class="mm-chip">少年</span>
-                <span class="mm-chip">ファンタジー</span>
-                <span class="mm-chip">アクション</span>
-                <span class="mm-chip">ヤンキー</span>
-                <span class="mm-chip">スチームパンク</span>
-              </div>
-            </div>
-
-            <div class="row g-2 mt-2">
-              <div class="col-12">
-                <div class="mm-label mb-1">想定雑誌（自由記入）</div>
-                <div>アフタヌーン、スピリッツ</div>
-              </div>
-              <div class="col-12">
-                <div class="mm-label mb-1">想定頻度とページ数（自由記入）</div>
-                <div>月刊40P</div>
-              </div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">向いてそうな人</div>
-              <div>バトル作画が好き／銃や鎧など装備が好き</div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">内容</div>
-              <div class="mm-note">銃と拳が並び立つ西部劇世界。主人公は拳闘流派の継承者。ギャング抗争の渦に…</div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">備考</div>
-              <div class="mm-note">短編試作から相談OK。背景は写真提供あり。</div>
-            </div>
-          </div>
+  <main class="container my-4 content-with-nav">
+    <!-- メイン列 -->
+    <section>
+      <!-- 上部フィルタ -->
+      <div class="row g-2 mb-3">
+        <div class="col-12 col-md-6">
+          <input id="searchInput" class="form-control" placeholder="タイトル・タグ・雑誌・頻度/ページ数・向いてそうな人・内容を検索…" />
+        </div>
+        <div class="col-6 col-md-3">
+          <select id="filterProgress" class="form-select">
+            <option value="">進捗状況（すべて）</option>
+            <option value="連載決定済み">連載決定済み</option>
+            <option value="コンペ用ネーム準備中">コンペ用ネーム準備中</option>
+            <option value="一緒につくろう企画段階">一緒につくろう企画段階</option>
+            <option value="アイデアだけある">アイデアだけある</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-3 d-flex gap-2">
+          <button id="clearFilters" class="btn btn-outline-secondary w-100">絞り込み解除</button>
         </div>
       </div>
 
-      <!-- Card #2 -->
-      <div class="col-12 col-md-6 col-lg-4">
-        <div class="card mm-card h-100">
-          <div class="card-body d-flex flex-column">
-            <div class="d-flex align-items-start justify-content-between">
-              <div class="fw-semibold">放課後クッキング×部活ラブコメ</div>
-              <span class="badge text-bg-warning">一緒につくろう企画段階</span>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">作品タイトル</div>
-              <div class="fw-semibold">湯気のとなり（仮）</div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">作品タグ</div>
-              <div>
-                <span class="mm-chip">ラブコメ</span>
-                <span class="mm-chip">日常</span>
-                <span class="mm-chip">部活</span>
-              </div>
-            </div>
-
-            <div class="row g-2 mt-2">
-              <div class="col-12">
-                <div class="mm-label mb-1">想定雑誌（自由記入）</div>
-                <div>ヤンマガWeb、コミックDAYS</div>
-              </div>
-              <div class="col-12">
-                <div class="mm-label mb-1">想定頻度とページ数（自由記入）</div>
-                <div>隔週20P</div>
-              </div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">向いてそうな人</div>
-              <div>柔らかい日常／料理小物や手元描写が得意</div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">内容</div>
-              <div class="mm-note">料理研究部に入った新入生と先輩の、台所から始まる青春。</div>
-            </div>
-
-            <div class="mt-2">
-              <div class="mm-label mb-1">備考</div>
-              <div class="mm-note">カラー扉あり。食器・キッチン道具の参考資料あり。</div>
-            </div>
-          </div>
-        </div>
+      <!-- タグフィルタ表示 -->
+      <div id="activeTagBar" class="mb-3 d-none">
+        <span class="small me-2 text-muted">タグで絞り込み中：</span>
+        <span id="activeTag" class="badge text-bg-dark"></span>
       </div>
 
-      <!-- ▼ 3枚目以降はこのカードをコピペして増やしてください -->
-    </div>
-    <!-- ▲ カード群ここまで -->
+      <!-- 一覧 -->
+      <div id="list" class="row g-3"></div>
+      <div id="empty" class="text-center text-muted py-5 d-none">該当する作品がありません。</div>
+    </section>
 
+    <!-- 右ナビ（PCは固定、スマホはオフキャンバス） -->
+    <aside class="d-none d-lg-block">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <img src="https://unavatar.io/discord" class="avatar" alt="">
+            <div class="small">
+              <div class="text-muted">あなた</div>
+              <div id="userNameSide" class="fw-semibold">（未ログイン）</div>
+            </div>
+          </div>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2"><a href="#" class="link-dark">トップ（作品一覧）</a></li>
+            <li class="mb-2"><a href="#" class="link-dark">使い方</a></li>
+            <li class="mb-2"><a href="#" class="link-dark">よくある質問</a></li>
+            <li class="mb-2"><a href="#" class="link-dark">お問い合わせ</a></li>
+          </ul>
+          <hr>
+          <div class="small text-muted">※ 原稿料は企画により異なるため掲載しません。詳細は個別にご相談ください。</div>
+        </div>
+      </div>
+    </aside>
   </main>
 
-  <!-- いまはデザイン専念のため、BootstrapのJSは未使用でもOK（モーダル等使わないので読み込み省略可） -->
+  <!-- オフキャンバス（スマホの右ナビ） -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="navOffcanvas" aria-labelledby="navOffcanvasLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="navOffcanvasLabel">ナビゲーション</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="閉じる"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <img src="https://unavatar.io/discord" class="avatar" alt="">
+        <div class="small">
+          <div class="text-muted">あなた</div>
+          <div id="userNameOff" class="fw-semibold">（未ログイン）</div>
+        </div>
+      </div>
+      <ul class="list-unstyled mb-0">
+        <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">トップ（作品一覧）</a></li>
+        <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">使い方</a></li>
+        <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">よくある質問</a></li>
+        <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">お問い合わせ</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 下部：選択バー（複数選んで“フカホリに伝える”） -->
+  <div id="stickyBar" class="mm-stickybar bg-white border-top">
+    <div class="container py-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+      <div class="small">選択中: <span id="count" class="fw-bold">0</span> 件</div>
+      <button id="openModalBtn" class="btn btn-primary">フカホリに気になってることを伝える</button>
+    </div>
+  </div>
+
+  <!-- 送信モーダル（デザインのみ／console出力） -->
+  <div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="submitForm" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">フカホリに伝える（まとめて）</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">共通ひとこと（任意）</label>
+            <textarea class="form-control" id="noteCommon" rows="3" placeholder="例）この2本なら来月から動けます。"></textarea>
+          </div>
+          <div class="border rounded p-2">
+            <div class="small text-muted mb-1">対象作品</div>
+            <ul id="selectedList" class="mb-0 ps-3"></ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="submitBtn" class="btn btn-primary" type="submit">送信（いまはconsole出力）</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS + アプリJS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz9"
+          crossorigin="anonymous"></script>
+  <script src="app.js"></script>
 </body>
 </html>
