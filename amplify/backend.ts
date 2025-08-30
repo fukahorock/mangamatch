@@ -1,6 +1,6 @@
-import { defineBackend } from "@aws-amplify/backend";
-import { auth } from "./auth/resource";
+import { defineBackend } from '@aws-amplify/backend';
+import { auth as authFn } from './functions/auth/resource';
 
-export default defineBackend({
-  auth,
+export const backend = defineBackend({
+  auth: authFn, // リソース名は "auth" のまま
 });
