@@ -1,0 +1,96 @@
+<!doctype html><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mangamatch — app</title>
+<style>
+  :root { color-scheme: dark light; }
+  body{margin:0;display:grid;grid-template-columns:240px 1fr;min-height:100dvh;
+       font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  aside{padding:1rem;border-right:1px solid rgba(0,0,0,.08)}
+  main{padding:1.25rem}
+  .muted{color:#777}
+
+  /* ツールバー */
+  .toolbar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin:.25rem 0 1rem}
+  .toolbar .grow{flex:1}
+  .input{padding:.6rem .75rem;border:1px solid rgba(0,0,0,.15);border-radius:10px;min-width:220px}
+  .select,.btn{padding:.6rem .75rem;border:1px solid rgba(0,0,0,.15);border-radius:10px;background:#fff}
+  .btn{cursor:pointer}
+
+  /* プロジェクトカード */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  .card{border:1px solid rgba(0,0,0,.12);border-radius:14px;padding:12px;background:#fff}
+  .card h3{margin:.1rem 0 .35rem;font-size:1.05rem}
+  .row{display:flex;justify-content:space-between;gap:.5rem;align-items:center}
+  .badge{font-size:.75rem;padding:.15rem .5rem;border-radius:999px;background:#eef}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:.25rem}
+  .tag{font-size:.75rem;padding:.15rem .5rem;border-radius:999px;background:#eee}
+  .meta{font-size:.75rem;color:#777;margin-top:.35rem}
+
+  /* 空状態 */
+  .empty{display:grid;place-items:center;border:1px dashed rgba(0,0,0,.2);
+         border-radius:14px;padding:2.2rem;color:#777}
+
+  @media (max-width:760px){
+    body{grid-template-columns:1fr}
+    aside{border-right:0;border-bottom:1px solid rgba(0,0,0,.08)}
+  }
+</style>
+
+<aside>
+  <div><strong>mangamatch</strong></div>
+  <div class="muted" id="who">loading...</div>
+  <hr>
+  <div><span class="badge" id="statusPill">checking…</span></div>
+  <hr>
+  <button id="logout" class="btn">ログアウト</button>
+</aside>
+
+<main>
+  <h1 style="margin:.2rem 0 .6rem">プロジェクト</h1>
+
+  <!-- ツールバー：検索＆ソート -->
+  <div class="toolbar">
+    <input id="q" class="input grow" type="search" placeholder="検索（タイトル・タグ）">
+    <select id="sort" class="select">
+      <option value="updated_desc">更新が新しい順</option>
+      <option value="updated_asc">更新が古い順</option>
+      <option value="name_asc">名前 A→Z</option>
+      <option value="name_desc">名前 Z→A</option>
+    </select>
+    <!-- 追加ボタンが必要なら：<button class="btn" id="add">新規</button> -->
+  </div>
+
+  <!-- 一覧 -->
+  <section id="projectSection">
+    <div id="empty" class="empty" hidden>まだプロジェクトがありません。</div>
+    <div id="grid" class="grid"></div>
+  </section>
+</main>
+
+<script type="module">
+  import { requireAuth, gotoLogout } from "/js/session.js";
+  import { initProjects } from "/js/projects.js";
+
+  // 認証チェック
+  const sess = await requireAuth();
+  document.getElementById("who").textContent = `logged in as ${sess.user.username}`;
+
+  // ステータス表示
+  try {
+    const s = await fetch("/status.json", { cache: "no-store" }).then(r=>r.json());
+    const pill = document.getElementById("statusPill");
+    if (s.ok) pill.textContent = `OK (${new Date(s.ts).toLocaleString()})`;
+    else { pill.textContent = "Degraded"; pill.style.background = "#fdd"; }
+  } catch { document.getElementById("statusPill").textContent = "unknown"; }
+
+  // ログアウト
+  document.getElementById("logout").addEventListener("click", gotoLogout);
+
+  // プロジェクト一覧の初期化
+  initProjects({
+    input: document.getElementById("q"),
+    sort: document.getElementById("sort"),
+    grid: document.getElementById("grid"),
+    empty: document.getElementById("empty")
+  });
+</script>
