@@ -11,14 +11,14 @@
   function setUser(u) {
     const name = (u && (u.username || u.name)) || "（未ログイン）";
     ["userName","userNameSide","userNameOff"].forEach(id => {
-      const el = document.getElementById(id); if (el) el.textContent = name;
+    const el = document.getElementById(id); if (el) el.textContent = name;
     });
-    // Discordアイコン反映（両方あれば両方）
+    // Discordアイコンを class="userAvatar" のすべてに適用
     const def = "/img/discord-default.png";
     const src = (u && u.avatarUrl) ? u.avatarUrl : def;
-    ["userAvatar","userAvatarSide"].forEach(id => {
-      const img = document.getElementById(id);
-      if (img) { img.src = src; img.alt = name; }
+    document.querySelectorAll(".userAvatar").forEach(img => {
+      img.setAttribute("src", src);
+      img.setAttribute("alt", name);
     });
   }
   function bindLogout() {
