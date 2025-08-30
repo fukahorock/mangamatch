@@ -141,42 +141,41 @@
         <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">よくある質問</a></li>
         <li class="mb-2"><a href="#" class="link-dark" data-bs-dismiss="offcanvas">お問い合わせ</a></li>
       </ul>
+      <img id="userAvatar" src="/img/discord-default.png" alt="" width="36" height="36" class="rounded-circle me-2">
       <button id="logoutSide" class="btn btn-outline-secondary btn-sm w-100 mt-2">ログアウト</button>
-    </div>
+          </div>
   </div>
 
-  <!-- 下部：選択バー -->
-  <div id="stickyBar" class="mm-stickybar bg-white border-top">
-    <div class="container py-3 d-flex flex-wrap gap-2 align-items-center justify-content-between">
-      <div class="small">気になってる作品: <span id="count" class="fw-bold">0</span> 件</div>
-      <button id="openModalBtn" class="btn btn-primary">選んでフカホリに伝える</button>
-    </div>
+<!-- 下部バー -->
+<div id="stickyBar" class="position-fixed bottom-0 start-0 end-0 bg-white border-top shadow-sm" style="display:none;">
+  <div class="container d-flex justify-content-between align-items-center py-2">
+    <div>選択中：<strong id="count">0</strong> 件</div>
+    <button id="openModalBtn" class="btn btn-primary">選んでフカホリに伝える</button>
   </div>
+</div>
 
-  <!-- モーダル -->
-  <div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="submitForm" class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">フカホリに伝える（まとめて）</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+<!-- モーダル -->
+<div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form class="modal-content" id="submitForm">
+      <div class="modal-header">
+        <h5 class="modal-title">選んだ作品を送信</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ol id="selectedList" class="list-group list-group-numbered"></ol>
+        <div class="mt-3">
+          <label class="form-label">メッセージ（任意）</label>
+          <textarea id="messageInput" class="form-control" rows="3" placeholder="補足があれば書いてください"></textarea>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">フカホリへのメッセージ（任意）</label>
-            <textarea class="form-control" id="noteCommon" rows="3" placeholder="例）この2本なら来月から動けます。"></textarea>
-          </div>
-          <div class="border rounded p-2">
-            <div class="small text-muted mb-2">各作品に「一言コメント」を追加できます（任意）</div>
-            <div id="selectedList" class="vstack gap-2"></div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button id="submitBtn" class="btn btn-primary" type="submit">送信（いまはconsole出力）</button>
-        </div>
-      </form>
-    </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">送信する</button>
+      </div>
+    </form>
   </div>
+</div>
+
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   <script src="js/projects.js"></script>
