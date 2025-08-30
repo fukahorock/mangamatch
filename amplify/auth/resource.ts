@@ -3,5 +3,5 @@ import { defineFunction } from "@aws-amplify/backend";
 export const auth = defineFunction({
   name: "auth",
   entry: "./handler.ts",
-  // （必要なら）timeoutSeconds: 10, memoryMB: 256 など指定可
+  // runtime: 20, // ←問題が続く場合は有効化（Node.js 20）
 });

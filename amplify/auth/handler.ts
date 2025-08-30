@@ -1,18 +1,16 @@
-// Node.js 18/20 で動作。Discord OAuth → Cookie セッション発行まで。
-// /api/auth/login へ遷移 → Discord同意画面 → /api/auth/callback → "/"へ302
-
+// Discord OAuth → Cookieセッション。TSでも型は any で緩めにしてビルドエラーを回避。
 import crypto from "node:crypto";
 
 const BASE_URL = process.env.BASE_URL || "https://mm.rock54.net";
-const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID!;
-const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET!;
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID as string;
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET as string;
 const REDIRECT_URI =
   process.env.DISCORD_REDIRECT_URI || `${BASE_URL}/api/auth/callback`;
 
 type Resp = {
   statusCode: number;
   headers?: Record<string, string>;
-  cookies?: string[]; // Amplify Functions で複数 Set-Cookie を返す
+  cookies?: string[];
   body?: string;
 };
 
@@ -51,12 +49,11 @@ function buildAuthorizeURL(state: string) {
 }
 
 export const handler = async (event: any): Promise<Resp> => {
-  const path = event.rawPath || event.path || "";
-  const qs = new URLSearchParams(event.rawQueryString || "");
+  const path = (event.rawPath || event.path || "") as string;
+  const qs = new URLSearchParams((event.rawQueryString || "") as string);
   const cookies = parseCookies(event);
 
   try {
-    // 1) ログイン開始: Discordへ302 + CSRF対策stateをCookieへ
     if (path.endsWith("/api/auth/login")) {
       const state = crypto.randomUUID();
       const stateCookie = [
@@ -65,12 +62,11 @@ export const handler = async (event: any): Promise<Resp> => {
         "HttpOnly",
         "Secure",
         "SameSite=Lax",
-        "Max-Age=600", // 10分
+        "Max-Age=600",
       ].join("; ");
       return redirect(buildAuthorizeURL(state), [stateCookie]);
     }
 
-    // 2) コールバック: code交換→ユーザー取得→セッションCookie→"/"へ302
     if (path.endsWith("/api/auth/callback")) {
       const code = qs.get("code");
       const state = qs.get("state");
@@ -116,7 +112,7 @@ export const handler = async (event: any): Promise<Resp> => {
         "HttpOnly",
         "Secure",
         "SameSite=Lax",
-        "Max-Age=86400", // 1日
+        "Max-Age=86400",
       ].join("; ");
       const clearState =
         "mm_oauth_state=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
@@ -124,7 +120,6 @@ export const handler = async (event: any): Promise<Resp> => {
       return redirect("/", [sessionCookie, clearState]);
     }
 
-    // 3) ログアウト: セッションクリア
     if (path.endsWith("/api/auth/logout")) {
       const del =
         "mm_session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0";
